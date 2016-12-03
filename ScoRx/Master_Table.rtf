@@ -1,0 +1,135 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1404\cocoasubrtf470
+{\fonttbl\f0\fswiss\fcharset0 Helvetica;\f1\fswiss\fcharset0 ArialMT;}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue0;\red255\green255\blue255;}
+\margl1440\margr1440\vieww19260\viewh12360\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 select *\
+from\
+(\
+select * from GroupPrac_COC  where DepressionScreening!='' and PQRS_Participation!=''\
+)\
+a \
+join\
+GroupPrac_PatientExp b\
+on\
+a.G_PAC_ID=b.G_PAC_ID\
+join\
+PhysicianCompare c\
+on\
+a.G_PAC_ID=c.G_PAC_ID\
+limit 20\
+\
+create table physician as\
+select NPI,FirstName,LastName, a.G_PAC_ID as G_PAC_ID,Gender, Credential, MedSchool, GradYear, PrimarySpec, SecSpec1, SecSpec2, SecSpec3, SecSpec4, AllSecSpecs, NumGroupPracMembers, City, State, ZipCode, AcceptMedicareAssignment, ReportedQualityMeasures, UsedEHR, ParticipatedMedicareMaintenance, CommittedHeartHealth,PQRS_Participation, FluShot, PneumoniaVaccine, DepressionScreening, TobaccoScreening, BodyWeightScreening, BloodPressureScreening, BreastCancerScreening, ColorectalCancerScreening, CompareNewOldMed, ControlBP_InDiabetesPatients, ReduceHeartAttack, HeartFailurePatients, MedToImprovePumpingAction_HeartPatients,Y\
+from\
+(select NPI, FirstName,LastName, G_PAC_ID,Gender, Credential, MedSchool, GradYear, PrimarySpec, SecSpec1, SecSpec2, SecSpec3, SecSpec4, AllSecSpecs, NumGroupPracMembers, City, State, ZipCode, AcceptMedicareAssignment, ReportedQualityMeasures, UsedEHR, ParticipatedMedicareMaintenance, CommittedHeartHealth\
+from PhysicianCompare )a\
+join(select G_PAC_ID,\
+case when PQRS_Participation='Y' then 1 else 0 end as PQRS_Participation, \
+FluShot, PneumoniaVaccine, DepressionScreening, TobaccoScreening, BodyWeightScreening, BloodPressureScreening, BreastCancerScreening, ColorectalCancerScreening, CompareNewOldMed, ControlBP_InDiabetesPatients, ReduceHeartAttack, HeartFailurePatients, MedToImprovePumpingAction_HeartPatients\
+from GroupPrac_COC  where DepressionScreening!='' and PQRS_Participation!='') b\
+on \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+\cf0 a.G_PAC_ID=b.G_PAC_ID\
+join\
+(select G_PAC_ID ,TimelyCare + Communication + PromoEdu + PatRating + Helpfulness + WorkingTogether + BetweenVisit + AttToMedCost as Y from GroupPrac_PatientExp group by G_PAC_ID) c\
+on\
+a.G_PAC_ID=c.G_PAC_ID\
+\
+create table u_physician_raw as\
+select NPI,FirstName||' '||LastName as name,Gender, Credential, MedSchool, GradYear, PrimarySpec, SecSpec1, SecSpec2, SecSpec3, SecSpec4,AllSecSpecs, avg(NumGroupPracMembers), City, State, ZipCode, avg(AcceptMedicareAssignment) as AcceptMedicareAssignment, avg(ReportedQualityMeasures) as ReportedQualityMeasures, avg(UsedEHR) as UsedEHR, avg(ParticipatedMedicareMaintenance) as ParticipatedMedicareMaintenance, avg(CommittedHeartHealth) as CommittedHeartHealth,avg(PQRS_Participation) as PQRS_Participation, avg(FluShot) as FluShot, avg(PneumoniaVaccine) as PneumoniaVaccine, avg(DepressionScreening) as DepressionScreening, avg(TobaccoScreening) as TobaccoScreening, avg(BodyWeightScreening) as BodyWeightScreening, avg(BloodPressureScreening) as BloodPressureScreening, avg(BreastCancerScreening) as BreastCancerScreening, avg(ColorectalCancerScreening) as ColorectalCancerScreening, avg(CompareNewOldMed) as CompareNewOldMed, avg(ControlBP_InDiabetesPatients) as ControlBP_InDiabetesPatients, avg(ReduceHeartAttack) as ReduceHeartAttack, avg(HeartFailurePatients) as HeartFailurePatients, avg(MedToImprovePumpingAction_HeartPatients) as MedToImprovePumpingAction_HeartPatients,avg(Y) as Y\
+from physician \
+group by NPI,name,Gender,Credential,MedSchool, GradYear, PrimarySpec, SecSpec1, SecSpec2, SecSpec3, SecSpec4,AllSecSpecs\
+having count(distinct City)=1 and count(distinct State)=1 and count(distinct ZipCode)=1\
+\
+\
+create table u_physician as\
+select a.*,Bene_Count,Total_Claim_Count,Total_Day_Supply,Total_Drug_Cost,Bene_Count_Ge65,Total_Claim_Count_Ge65,Total_Day_Supply_Ge65,Total_Drug_Cost_Ge65,\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f1\fs26 \cf0 \expnd0\expndtw0\kerning0
+Total_Amount_of_Payment_USDollars,Form_of_Payment_or_Transfer_of_Value,Nature_of_Payment_or_Transfer_of_Value
+\f0\fs24 \kerning1\expnd0\expndtw0 \
+from \
+u_physician_raw a\
+join\
+(\
+select Npi,Bene_Count,Total_Claim_Count,Total_Day_Supply,Total_Drug_Cost,Bene_Count_Ge65,Total_Claim_Count_Ge65,Total_Day_Supply_Ge65,Total_Drug_Cost_Ge65\
+from Prescription \
+)b\
+on \
+a.NPI=b.Npi\
+join\
+(\
+select 
+\f1\fs26 \expnd0\expndtw0\kerning0
+Physician_First_Name||
+\f0\fs24 \kerning1\expnd0\expndtw0 ' '
+\f1\fs26 \expnd0\expndtw0\kerning0
+||Physician_Last_Name as name,\cf2 \cb3 \outl0\strokewidth0 \strokec2 Total_Amount_of_Payment_USDollars,Form_of_Payment_or_Transfer_of_Value,Nature_of_Payment_or_Transfer_of_Value\
+from Payments\
+)c\
+on \
+a.name=c.name\
+\
+create table physician_800_raw as\
+select a.*,DepressionScreening,TobaccoScreening,BodyWeightScreening,BloodPressureScreening,CompareNewOldMed,ReduceHeartAttack from\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 \cb1 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 u_phycisian a join
+\f1\fs26 \cf2 \cb3 \expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 \
+( select * from IndEPPublicReporting_COC where DepressionScreening!=
+\f0\fs24 \cf0 \cb1 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 ' ' or 
+\f1\fs26 \cf2 \cb3 \expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 ) b\
+on a.NPI=b.NPI\
+\
+
+\f0\fs24 \cf0 \cb1 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 create table u_physician_temp as\
+select a.*,Bene_Count,Total_Claim_Count,Total_Day_Supply,Total_Drug_Cost,Bene_Count_Ge65,Total_Claim_Count_Ge65,Total_Day_Supply_Ge65,Total_Drug_Cost_Ge65\
+from \
+u_physician_raw a\
+join\
+(\
+select Npi,Bene_Count,Total_Claim_Count,Total_Day_Supply,Total_Drug_Cost,Bene_Count_Ge65,Total_Claim_Count_Ge65,Total_Day_Supply_Ge65,Total_Drug_Cost_Ge65\
+from Prescription \
+)b\
+on \
+a.NPI=b.Npi\
+\
+create table physician_final\
+as\
+select a.*,
+\f1\fs26 \expnd0\expndtw0\kerning0
+Total_Amount_of_Payment_USDollars,Form_of_Payment_or_Transfer_of_Value,Nature_of_Payment_or_Transfer_of_Value\
+from
+\f0\fs24 \kerning1\expnd0\expndtw0 \
+u_physician_temp a\
+join\
+(\
+select 
+\f1\fs26 \expnd0\expndtw0\kerning0
+Physician_First_Name||
+\f0\fs24 \kerning1\expnd0\expndtw0 ' '
+\f1\fs26 \expnd0\expndtw0\kerning0
+||Physician_Last_Name as name,Total_Amount_of_Payment_USDollars,Form_of_Payment_or_Transfer_of_Value,Nature_of_Payment_or_Transfer_of_Value\
+from Payments\
+)c\
+on \
+a.name=c.name\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 \kerning1\expnd0\expndtw0 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+\cf0 \
+\
+\
+\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+\cf0 \
+\
+}
