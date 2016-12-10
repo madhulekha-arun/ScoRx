@@ -10,6 +10,20 @@ In order to run it we need a connection to be made to an sqlite database that co
 
 Once the data set up is completed, we can run the main python script (ScoRx/ScoRx/main_model.py) which will perform all the feature creation, selection, model running. The dependencies are already imported, therefore no further process is required.
 
+We worked on approximately 9GB of data, consisting of:
+
+•Medicare Provider Prescription Data 
+(https://data.cms.gov/Public-Use-Files/Medicare-Provider-Utilization-and-Payment-Data-201/465c-49pb)
+•Payments data from drug-manufacturers to doctors 
+(https://openpaymentsdata-origin.cms.gov/dataset/General-Payment-Data-Detailed-Dataset-2015-Reporti/gejn-gt5d)
+•Physician database, uniquely identified by their NPI (National Provider Identifier).
+•Consumer Assessment of Healthcare Providers and Systems (CAHPS) for PQRS (Physician Quality Reporting System) performance rates reported by group practices.
+•Individual Eligible Professionals PQRS measures performance rates reported via claims.
+•(PQRS) measures performance rates reported by group practices via the Web Interface.
+(https://data.medicare.gov/data/physician-compare)
+•Medical School Rankings (Scraped from http://medical-schools.startclass.com/)
+
+
 
 
 
