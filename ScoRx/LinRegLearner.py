@@ -22,6 +22,10 @@ class LinRegLearner(object):
         # Explained variance score: 1 is perfect prediction
         print('Variance score: %.2f' % regr.score(testX, testY))
 
+        scores = cross_validation.cross_val_score(regr, trainX, trainY, scoring='accuracy',
+                                                  cv=3)
+        print scores
+
         # # Plot outputs
         # plt.scatter(testX, testY, color='black')
         # plt.plot(testX, regr.predict(testX), color='blue',
