@@ -15,7 +15,7 @@ class SupportVectorMachine(object):
 
         scores = cross_validation.cross_val_score(lin_svm, trainX, trainY, scoring='accuracy',
                                                   cv=3)  ##scoring='mean_squared_error'
-        svm_model = lin_svm.fit(testX, testY)  ## Train the model for 2013
+        svm_model = lin_svm.fit(trainX, trainY)  ## Train the model for 2013
         print scores  ## Cross validation score
 
         # print rf_model.score(testX, testY)
